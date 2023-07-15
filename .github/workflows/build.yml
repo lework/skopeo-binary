@@ -41,11 +41,20 @@ jobs:
               git checkout -b $t $t
               git branch
               
-              # golang:1.19.2-alpine3.16
-              docker pull golang:1.19.2-alpine3.16
-              docker run --rm -t -v $PWD:/build golang:1.19.2-alpine3.16 sh -c "apk update && apk add gpgme btrfs-progs-dev llvm13-dev gcc musl-dev && cd /build && CGO_ENABLE=0 GO111MODULE=on GOOS=linux GOARCH=amd64 go build -mod=vendor '-buildmode=pie' -ldflags '-extldflags -static' -gcflags '' -tags 'exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp' -o ./bin/skopeo-linux-amd64 ./cmd/skopeo && md5sum ./bin/skopeo-linux-amd64 > ./bin/skopeo-linux-amd64.md5 && sha256sum ./bin/skopeo-linux-amd64 > ./bin/skopeo-linux-amd64.sha256"
+              # golang:1.20.6-alpine3.18
+              docker pull golang:1.20.6-alpine3.18
               
-              docker run --rm -t -v $PWD:/build golang:1.19.2-alpine3.16 sh -c "apk update && apk add gpgme btrfs-progs-dev llvm13-dev gcc musl-dev && cd /build && CGO_ENABLE=0 GO111MODULE=on GOOS=linux GOARCH=arm64 go build -mod=vendor '-buildmode=pie' -ldflags '-extldflags -static' -gcflags '' -tags 'exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp' -o ./bin/skopeo-linux-arm64 ./cmd/skopeo && md5sum ./bin/skopeo-linux-arm64 > ./bin/skopeo-linux-arm64.md5 && sha256sum ./bin/skopeo-linux-arm64 > ./bin/skopeo-linux-arm64.sha256"
+              function go_build() {
+                GOOS=$1
+                GOARCH=$2
+                docker run --rm -t -v $PWD:/build golang:1.20.6-alpine3.18 sh -c "apk update && apk add gpgme btrfs-progs-dev llvm13-dev gcc musl-dev && cd /build && CGO_ENABLE=0 GO111MODULE=on GOOS=$GOOS GOARCH=$GOARCH go build -mod=vendor '-buildmode=pie' -ldflags '-extldflags -static' -gcflags '' -tags 'exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp' -o ./bin/skopeo-${GOOS}-${GOARCH} ./cmd/skopeo && md5sum ./bin/skopeo-${GOOS}-${GOARCH} > ./bin/skopeo-${GOOS}-${GOARCH}.md5 && sha256sum ./bin/skopeo-${GOOS}-${GOARCH} > ./bin/skopeo-${GOOS}-${GOARCH}.sha256"
+              }
+              
+              go_build linux amd64
+              go_build linux arm64
+              go_build darwin amd64
+              go_build darwin arm64
+              
               ls -al bin/
               cd ../
               ls -al ./
@@ -53,13 +62,13 @@ jobs:
               
               echo "::debug::[Push file]"
               echo "${t}" >> version.txt
-              git config --global user.email "lework@yeah.net"
-              git config --global user.name "lework"
+              git config --global user.email "bmoylan@github.io"
+              git config --global user.name "bmoylan"
               git config --global --add safe.directory /github/workspace
               git add version.txt
               git commit -m "$APP $ADD_TAG (Github Actions Automatically Built in `date +"%Y-%m-%d %H:%M"`)"
               echo "ADD_TAG=${ADD_TAG}" >> $GITHUB_OUTPUT
-              cat ./skopeo/bin/skopeo-linux-{amd64,arm64}.{md5,sha256} > CHECKSUMS.txt
+              cat ./skopeo/bin/skopeo-{darwin,linux}-{amd64,arm64}.{md5,sha256} > CHECKSUMS.txt
               echo "::endgroup::"
               popd
               break
@@ -86,4 +95,10 @@ jobs:
             ./skopeo/bin/skopeo-linux-arm64
             ./skopeo/bin/skopeo-linux-arm64.md5
             ./skopeo/bin/skopeo-linux-arm64.sha256
+            ./skopeo/bin/skopeo-darwin-amd64
+            ./skopeo/bin/skopeo-darwin-amd64.md5
+            ./skopeo/bin/skopeo-darwin-amd64.sha256
+            ./skopeo/bin/skopeo-darwin-arm64
+            ./skopeo/bin/skopeo-darwin-arm64.md5
+            ./skopeo/bin/skopeo-darwin-arm64.sha256
           body_path: ./CHECKSUMS.txt
