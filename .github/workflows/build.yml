@@ -71,7 +71,7 @@ jobs:
               git commit -m "$APP $ADD_TAG (Github Actions Automatically Built in `date +"%Y-%m-%d %H:%M"`)"
               echo "ADD_TAG=${ADD_TAG}" >> $GITHUB_OUTPUT
               cat ./skopeo/bin/skopeo-{darwin,linux}-{amd64,arm64}.{md5,sha256} > CHECKSUMS.txt
-              cat ./skopeo/bin/skopeo-linux-ppc64le.{md5,sha256} > CHECKSUMS.txt
+              cat ./skopeo/bin/skopeo-linux-ppc64le.{md5,sha256} >> CHECKSUMS.txt
               echo "::endgroup::"
               popd
               break
