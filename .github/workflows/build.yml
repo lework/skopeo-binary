@@ -31,7 +31,7 @@ jobs:
           new_tags="$(printf "%s" "$tags"| sed -n '{/\.0$/{g;p}};h' | tail -4) $(printf "%s" "$tags" | tail -1)"
           echo "::debug::[Tags] $new_tags"
 
-          # golang:1.22-alpine⁠
+          # golang:1.22-alpine
           build_image="golang:1.22-alpine⁠"
           docker pull "${build_image}"
           
