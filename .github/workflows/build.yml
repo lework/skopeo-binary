@@ -32,7 +32,7 @@ jobs:
           echo "::debug::[Tags] $new_tags"
 
           # golang:1.22-alpine
-          build_image="golang:1.22-alpine⁠"
+          build_image="golang:1.22-alpine"
           docker pull "${build_image}"
           
           for t in $new_tags; do
